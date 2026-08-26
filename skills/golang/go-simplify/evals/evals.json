@@ -1,0 +1,183 @@
+{
+  "skill_name": "go-simplify",
+  "evals": [
+    {
+      "id": 1,
+      "name": "tool-driven-simplification",
+      "description": "The workflow must install gocognit and use the expected Go simplification tools without assuming an API break.",
+      "prompt": "Prepare coding-agent instructions for simplifying a Go service package. The package has several long functions, some dead helpers, and no requested public API break. Include the commands the agent should run.",
+      "trap": "The model may omit the required gocognit install, skip deadcode or modernize, or tell the agent to shrink public APIs without permission.",
+      "assertions": [
+        {
+          "id": "1.1",
+          "text": "Includes `go install github.com/uudashr/gocognit/cmd/gocognit@latest`"
+        },
+        {
+          "id": "1.2",
+          "text": "Includes `gocognit ./...` as a discovery or verification command"
+        },
+        {
+          "id": "1.3",
+          "text": "Includes `deadcode ./...` and iterative `modernize -fix ./...` plus `gofmt` until another pass produces no new useful diff"
+        },
+        {
+          "id": "1.4",
+          "text": "Includes the configured linter or `go vet ./...`, plus `go test ./...`"
+        },
+        {
+          "id": "1.5",
+          "text": "Preserves public behavior and API because no compatibility break was requested"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "collapse-wrapper-api",
+      "description": "A one-use abstraction should be removed when it only hides direct ownership.",
+      "prompt": "Review this Go code with go-simplify. It is internal code; behavior should stay the same.\n\n```go\npackage render\n\ntype Sprite struct{ Name string }\n\ntype SpriteProvider interface {\n    Sprite() Sprite\n}\n\ntype spriteProvider struct{ sprite Sprite }\n\nfunc (p spriteProvider) Sprite() Sprite { return p.sprite }\n\nfunc NewSpriteProvider(sprite Sprite) SpriteProvider {\n    return spriteProvider{sprite: sprite}\n}\n\ntype Layer struct{ sprite Sprite }\n\nfunc NewLayer(provider SpriteProvider) Layer {\n    return Layer{sprite: provider.Sprite()}\n}\n\nfunc BuildLayer(sprite Sprite) Layer {\n    return NewLayer(NewSpriteProvider(sprite))\n}\n```\n\nWhat should change?",
+      "trap": "The model may preserve the provider interface and factory because they look extensible, despite there being one internal caller and no alternate implementation.",
+      "assertions": [
+        {
+          "id": "2.1",
+          "text": "Identifies SpriteProvider and NewSpriteProvider as unnecessary abstraction for one local use"
+        },
+        {
+          "id": "2.2",
+          "text": "Changes NewLayer to accept the concrete Sprite directly or otherwise removes the provider layer"
+        },
+        {
+          "id": "2.3",
+          "text": "Deletes the provider implementation instead of leaving a wrapper"
+        },
+        {
+          "id": "2.4",
+          "text": "Preserves observable behavior of BuildLayer"
+        },
+        {
+          "id": "2.5",
+          "text": "Frames the reason as fewer concepts or clearer ownership, not just fewer lines"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "canonical-representation",
+      "description": "Duplicate stored representations should collapse into one owner of the invariant.",
+      "prompt": "Use go-simplify to review this Go code. Preserve behavior and error semantics.\n\n```go\npackage job\n\nimport \"errors\"\n\ntype State int\n\nconst (\n    StateUnknown State = iota\n    StateQueued\n    StateRunning\n    StateDone\n)\n\ntype Job struct {\n    State     State\n    StateName string\n    Done      bool\n}\n\nfunc New(name string) (Job, error) {\n    switch name {\n    case \"queued\":\n        return Job{State: StateQueued, StateName: name}, nil\n    case \"running\":\n        return Job{State: StateRunning, StateName: name}, nil\n    case \"done\":\n        return Job{State: StateDone, StateName: name, Done: true}, nil\n    default:\n        return Job{}, errors.New(\"unknown state\")\n    }\n}\n\nfunc (j Job) IsDone() bool {\n    return j.Done || j.State == StateDone || j.StateName == \"done\"\n}\n```\n\nWhat simplification should you make?",
+      "trap": "The model may keep State, StateName, and Done synchronized with more helpers instead of collapsing duplicate representations.",
+      "assertions": [
+        {
+          "id": "3.1",
+          "text": "Identifies State, StateName, and Done as duplicate representations of the same concept"
+        },
+        {
+          "id": "3.2",
+          "text": "Chooses one canonical stored representation, preferably State"
+        },
+        {
+          "id": "3.3",
+          "text": "Derives IsDone from the canonical representation instead of storing a second Done flag"
+        },
+        {
+          "id": "3.4",
+          "text": "Preserves the unknown-state error behavior"
+        },
+        {
+          "id": "3.5",
+          "text": "Does not add a manager, registry, adapter, or callback abstraction"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "benchmark-sensitive-stop-point",
+      "description": "Hot-path representation changes require benchmark evidence and should not jump to speculative packing.",
+      "prompt": "Use go-simplify to review this hot-path Go code. A teammate suggests bit-packing Cell to save memory, but no benchmark exists yet.\n\n```go\npackage grid\n\ntype Cell struct {\n    Terrain uint8\n    Light   uint8\n    Object  uint16\n}\n\nfunc Render(cells []Cell) int {\n    total := 0\n    for _, c := range cells {\n        total += int(c.Terrain) + int(c.Light) + int(c.Object)\n    }\n    return total\n}\n```\n\nWhat should the simplification plan say?",
+      "trap": "The model may eagerly propose bit packing or generated code even though the skill says to consider packing only with benchmark evidence.",
+      "assertions": [
+        {
+          "id": "4.1",
+          "text": "Does NOT recommend bit-packing Cell without benchmark or memory evidence"
+        },
+        {
+          "id": "4.2",
+          "text": "Suggests first checking real callers, allocation profiles, or benchmarks for the hot path"
+        },
+        {
+          "id": "4.3",
+          "text": "Captures a benchmark baseline before hot-path changes and reruns the same benchmark after the patch"
+        },
+        {
+          "id": "4.4",
+          "text": "Compares time/op, bytes/op, and allocs/op or otherwise explicitly checks for allocation regressions"
+        },
+        {
+          "id": "4.5",
+          "text": "Mentions executable benchmark runners when present"
+        },
+        {
+          "id": "4.6",
+          "text": "States a stop point when the next change needs benchmark evidence"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "go-structural-invariants",
+      "description": "Simplification should target package-level mutable state, hidden init setup, and redundant context roots when they obscure ownership.",
+      "prompt": "Use go-simplify to review this Go package. Behavior should stay the same.\n\n```go\npackage service\n\nimport (\n    \"context\"\n    \"net/http\"\n    \"time\"\n)\n\nvar client *http.Client\nvar timeout = 5 * time.Second\n\nfunc init() {\n    client = &http.Client{Timeout: timeout}\n}\n\ntype Service struct{}\n\nfunc (s Service) Fetch(path string) (*http.Response, error) {\n    ctx, cancel := context.WithTimeout(context.Background(), timeout)\n    defer cancel()\n    req, err := http.NewRequestWithContext(ctx, http.MethodGet, path, nil)\n    if err != nil {\n        return nil, err\n    }\n    return client.Do(req)\n}\n```\n\nWhat simplification should you propose?",
+      "trap": "The model may only rename fields or format code, missing the hidden package-level state, init side effect, and context root that should be explicit.",
+      "assertions": [
+        {
+          "id": "5.1",
+          "text": "Identifies package-level mutable client state as a local-reasoning problem"
+        },
+        {
+          "id": "5.2",
+          "text": "Moves setup out of init into an explicit constructor or configuration path"
+        },
+        {
+          "id": "5.3",
+          "text": "Stores ownership on Service or another concrete owner instead of a global variable"
+        },
+        {
+          "id": "5.4",
+          "text": "Changes Fetch or the call path to accept/propagate context instead of always creating context.Background() internally"
+        },
+        {
+          "id": "5.5",
+          "text": "Preserves behavior while reducing hidden state and side effects"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "stop-before-cosmetic-churn",
+      "description": "The skill should reject private naming churn that does not remove concepts or clarify ownership.",
+      "prompt": "Use go-simplify to review this Go function. A teammate wants to rename every short local variable to a longer descriptive name, but the function is private, small, tested, and already clear.\n\n```go\npackage hash\n\nfunc mix(a, b uint64) uint64 {\n    x := a ^ (b << 1)\n    x ^= x >> 33\n    x *= 0xff51afd7ed558ccd\n    x ^= x >> 33\n    return x\n}\n```\n\nWhat should you recommend?",
+      "trap": "The model may propose broad private renaming because it looks like simplification, even though it adds churn without reducing concepts.",
+      "assertions": [
+        {
+          "id": "6.1",
+          "text": "Does NOT recommend broad renaming as the main change"
+        },
+        {
+          "id": "6.2",
+          "text": "Explains that the change would not reduce concept count, API size, retained state, allocations, or ownership complexity"
+        },
+        {
+          "id": "6.3",
+          "text": "Identifies this as a stop condition or no-op recommendation"
+        },
+        {
+          "id": "6.4",
+          "text": "Allows a targeted comment or test only if the algorithm itself is genuinely unclear or under-specified"
+        },
+        {
+          "id": "6.5",
+          "text": "Keeps behavior unchanged"
+        }
+      ]
+    }
+  ]
+}

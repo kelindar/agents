@@ -1,0 +1,4 @@
+interface:
+  display_name: "Go Contract"
+  short_description: "Design clear, durable, idiomatic Go APIs"
+  default_prompt: "Use $go-contract to design or review this Go package API."
