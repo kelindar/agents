@@ -5,6 +5,7 @@ description: >-
   switch statements when this improves readability without changing behavior.
   Use when simplifying repeated branching, replacing if chains with switch,
   reducing repetitive guard clauses, or making Go control flow more idiomatic.
+disable-model-invocation: true
 ---
 
 # Go Switch

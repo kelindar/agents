@@ -5,6 +5,7 @@ description: >-
   assets.Source) and applies them in safe waves with go test verification.
   Use when renaming packages or exported types, removing name stutter, or doing
   a systematic API naming pass. For API inventory only, use go-exported-api.
+disable-model-invocation: true
 ---
 
 # Go exported API rename pass

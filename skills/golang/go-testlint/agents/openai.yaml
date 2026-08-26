@@ -1,0 +1,6 @@
+interface:
+  display_name: "Go Testlint"
+  short_description: "Improve Go test structure and naming"
+  default_prompt: "Use $go-testlint to audit and fix Go test naming, file pairing, and table-test structure."
+policy:
+  allow_implicit_invocation: false

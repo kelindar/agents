@@ -1,0 +1,6 @@
+interface:
+  display_name: "Go Rename"
+  short_description: "Rename Go APIs without stutter"
+  default_prompt: "Use $go-rename to propose and apply a safe Go API rename."
+policy:
+  allow_implicit_invocation: false

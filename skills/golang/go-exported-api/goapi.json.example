@@ -1,4 +1,0 @@
-{
-  "include_internal": true,
-  "extra": ["cmd/wasm/main.go"]
-}

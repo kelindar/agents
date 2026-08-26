@@ -1,0 +1,6 @@
+interface:
+  display_name: "Go Switch"
+  short_description: "Simplify repeated Go branching"
+  default_prompt: "Use $go-switch to simplify repeated Go branching with switch statements when it improves readability."
+policy:
+  allow_implicit_invocation: false

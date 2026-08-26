@@ -4,6 +4,7 @@ description: >-
   Audit and fix Go test naming, file pairing, and table-test structure using
   scripts/testlint.go. Use when writing or reviewing _test.go files, long Test
   names, test hygiene, table tests, fixtures, or foo_test.go without foo.go.
+disable-model-invocation: true
 ---
 
 # Go testlint
