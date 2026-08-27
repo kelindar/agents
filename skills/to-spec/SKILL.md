@@ -24,7 +24,7 @@ The skill is fully standalone. Do not use an issue tracker, labels, setup skills
 
 5. Prefer the highest existing test seam that exercises the feature's external behavior. Record the chosen seam and any assumptions in the spec; do not pause for confirmation.
 
-6. Apply the `unslop` skill to the draft so the spec is readable, concrete, and human-sounding without changing its meaning or required structure.
+6. Apply the `write-for-humans` skill to the draft so the spec is readable, concrete, and human-sounding without changing its meaning or required structure.
 
 7. Write only the local spec file using the template below. Do not publish it elsewhere. Report the created path when finished.
 
