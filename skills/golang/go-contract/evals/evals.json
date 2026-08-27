@@ -1,0 +1,171 @@
+{
+  "skill_name": "go-contract",
+  "evals": [
+    {
+      "id": 1,
+      "name": "short-exported-names",
+      "description": "Package context should carry meaning so exported names stay at one or two words.",
+      "prompt": "Review this unshipped Go API and propose a smaller contract. Callers may be updated.\n\n```go\npackage auth\n\nimport \"time\"\n\ntype UserAuthenticationConfiguration struct {\n    TokenTimeToLive time.Duration\n}\n\nfunc NewUserAuthenticationConfiguration(ttl time.Duration) *UserAuthenticationConfiguration {\n    return &UserAuthenticationConfiguration{TokenTimeToLive: ttl}\n}\n\nfunc (c *UserAuthenticationConfiguration) ValidateUserAuthenticationToken(token string) error {\n    return nil\n}\n```",
+      "trap": "The model may preserve verbose names, replace them with vague two-word names, or add abstractions instead of using the package name as context.",
+      "assertions": [
+        {
+          "id": "1.1",
+          "text": "Uses the `auth` package as context and proposes a one-word type such as `Config`"
+        },
+        {
+          "id": "1.2",
+          "text": "Shortens the constructor to `New` or another natural one-word package-qualified name"
+        },
+        {
+          "id": "1.3",
+          "text": "Shortens the method and field to one or two words while preserving their exact meaning"
+        },
+        {
+          "id": "1.4",
+          "text": "Uses action or qualifier first when a two-word name is needed"
+        },
+        {
+          "id": "1.5",
+          "text": "Does not introduce a manager, service, provider, factory, or interface"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "behavior-is-api",
+      "description": "A behavior change with an unchanged signature must still receive contract and compatibility review.",
+      "prompt": "A Go package exports `func List() []Item`. It has always returned items oldest-first, but there is no comment promising the order. I want to change it to newest-first without changing the signature. Is this an internal cleanup? What should I do?",
+      "trap": "The model may treat the unchanged signature or missing documentation as permission to change observable ordering silently.",
+      "assertions": [
+        {
+          "id": "2.1",
+          "text": "Treats observed ordering as part of the caller-visible contract despite the unchanged signature"
+        },
+        {
+          "id": "2.2",
+          "text": "Checks real callers, tests, examples, or release history before deciding compatibility"
+        },
+        {
+          "id": "2.3",
+          "text": "Recommends making order explicit in documentation and tests"
+        },
+        {
+          "id": "2.4",
+          "text": "Offers a compatibility-safe API choice or clearly labels a deliberate breaking change"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "exported-interface-evolution",
+      "description": "Adding a method to an exported interface should be recognized as a breaking change for implementers.",
+      "prompt": "Review this proposed Go API change.\n\n```go\npackage cache\n\ntype Store interface {\n    Get(key string) ([]byte, error)\n}\n```\n\nI want to add `Put(key string, value []byte) error` to `Store`. Several downstream packages implement it. Suggest the contract change and names.",
+      "trap": "The model may append the method because it looks additive, breaking every downstream implementation.",
+      "assertions": [
+        {
+          "id": "3.1",
+          "text": "States that adding `Put` to `Store` breaks existing implementers"
+        },
+        {
+          "id": "3.2",
+          "text": "Keeps `Store` unchanged"
+        },
+        {
+          "id": "3.3",
+          "text": "Proposes a narrow sibling interface or a method on a package-owned concrete type"
+        },
+        {
+          "id": "3.4",
+          "text": "Uses short capability names, preferably one word and no more than two"
+        },
+        {
+          "id": "3.5",
+          "text": "Accounts for ownership or copying of the `[]byte` value"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "ownership-context-lifecycle",
+      "description": "A buffer-like API must expose context, aliasing, and close semantics to callers.",
+      "prompt": "Design the exported API for a Go package named `blob`. It loads a large value with cancellable I/O, lets callers inspect bytes without an unnecessary copy, optionally retain an independent copy, and releases resources when done. Show a minimal call site and declarations.",
+      "trap": "The model may hide cancellation, return an unexplained mutable slice, use channels for iteration, or leave `Close` semantics ambiguous.",
+      "assertions": [
+        {
+          "id": "4.1",
+          "text": "Places `context.Context` first on the blocking load operation"
+        },
+        {
+          "id": "4.2",
+          "text": "States that borrowed bytes are read-only and gives their lifetime"
+        },
+        {
+          "id": "4.3",
+          "text": "Provides a short `Clone` or equivalent operation for an independent copy"
+        },
+        {
+          "id": "4.4",
+          "text": "Defines what `Close` releases and whether repeated calls are valid"
+        },
+        {
+          "id": "4.5",
+          "text": "Uses one-word names where package context suffices and avoids three-word identifiers"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "constructor-without-ceremony",
+      "description": "Constructor and configuration design should stay short without forcing one configuration pattern.",
+      "prompt": "Simplify this proposed unshipped API in package `client`. Required endpoint identity and optional retry policy must remain expressible.\n\n```go\ntype AdvancedClientRetryConfiguration struct {\n    MaximumRetryAttemptCount int\n}\n\nfunc NewNetworkServiceClientWithAdvancedRetryConfiguration(\n    endpoint string,\n    config AdvancedClientRetryConfiguration,\n) *NetworkServiceClient\n```\n\nShow the declarations you would expose.",
+      "trap": "The model may keep ceremonial names, hide required identity in options, or insist on functional options when a small config value is clearer.",
+      "assertions": [
+        {
+          "id": "5.1",
+          "text": "Uses short package-qualified names such as `client.Client`, `client.Config`, and `client.New`"
+        },
+        {
+          "id": "5.2",
+          "text": "Keeps the required endpoint as a constructor parameter"
+        },
+        {
+          "id": "5.3",
+          "text": "Represents retry policy with a short field or option without requiring a speculative abstraction"
+        },
+        {
+          "id": "5.4",
+          "text": "Avoids exported identifiers of three or more words"
+        },
+        {
+          "id": "5.5",
+          "text": "Leaves a clear ready-to-use result and default behavior"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "private-change-boundary",
+      "description": "The skill should not turn a private implementation rename into public API design work.",
+      "prompt": "This Go change only renames the private helper `calculateNormalizedCacheEntryExpiration` to a shorter private name. Its signature and behavior stay the same, and no exported declaration or observable behavior changes. What scope of review is warranted?",
+      "trap": "The model may invent an exported API redesign or apply the full contract workflow to a private mechanical rename.",
+      "assertions": [
+        {
+          "id": "6.1",
+          "text": "Recognizes that no caller-visible contract changes"
+        },
+        {
+          "id": "6.2",
+          "text": "Keeps review proportional to the private rename and its local callers"
+        },
+        {
+          "id": "6.3",
+          "text": "Suggests a concise precise private name if enough context exists, or requests that context"
+        },
+        {
+          "id": "6.4",
+          "text": "Does not invent exported types, interfaces, constructors, or compatibility work"
+        }
+      ]
+    }
+  ]
+}
