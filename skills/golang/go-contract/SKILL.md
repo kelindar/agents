@@ -1,49 +1,30 @@
 ---
 name: go-contract
-description: Review caller-visible Go contracts before any API change. Use whenever an agent considers adding, removing, renaming, or changing an exported declaration or observable package behavior, including signatures, defaults, errors, ownership, lifecycle, concurrency, or compatibility.
+description: Design and review Go package contracts. Use before any change to caller-visible API or behavior.
 ---
 
 # Go contract
 
-Caller code is the contract. Minimize the concepts a caller must learn, not merely the number of declarations.
+Caller-visible behavior is the API. Minimize concepts, not declarations.
 
-## Work from caller code
+## Establish the contract
 
-1. Trace the package, every exported declaration, real callers, examples, tests, and documentation. The inventory is complete when each export maps to a useful caller action or is marked as a removal candidate.
-2. Write the smallest realistic call site for the common path. Include construction, primary work, errors, durability, and cleanup only when the package owns those concerns. The call site is complete when its operation order and error path are visible.
-3. Check every relevant contract dimension: ownership, mutation, concurrency, blocking, cancellation, ordering, boundaries, partial progress, retry, durability, and lifecycle. The contract is complete when callers need not guess any relevant behavior.
-4. Choose the smallest set of declarations that supports the call site, then apply the rules below.
+Inspect exports, real callers, examples, tests, and docs. Draft the smallest realistic common call, including failure and cleanup when relevant. Keep an export only when it enables a useful caller action.
 
-## Shape the package
+Settle each relevant promise: ownership, mutation and aliasing, concurrency, blocking and cancellation, ordering and bounds, partial progress and retry, durability, and lifecycle. The contract is ready when callers need not infer behavior.
 
-- Give the package one job and one vocabulary. Split concepts only when callers use them independently.
-- Prefer one constructor, useful defaults, and a ready result. Put required identity in parameters. Reserve options for optional policy or tuning, and keep their representation package-owned.
-- Export configuration when callers must construct, inspect, compare, or serialize it as data.
-- Return package-owned concrete types. Accept narrow interfaces at demonstrated substitution boundaries.
-- Adopt a standard contract only when the package honors its full semantics.
-- Add an extension point when a current second implementation or caller seam requires it.
+## Decide
 
-## Name the contract
+- Give the package one job and vocabulary. Split concepts when callers use them independently.
+- Prefer one constructor with useful defaults and a ready result. Put required identity in parameters; reserve options for optional policy or tuning. Export configuration when callers use it as data.
+- Return package-owned concrete types. Accept narrow interfaces at real substitution seams. Add extension points for current alternate implementations, not hypothetical ones. Honor standard contracts in full.
+- Make `package.Identifier` natural. Prefer one-word functions, methods, and types. For two words, put the action or qualifier first (`ReadFile`, `MaxSize`, `FileStore`). Three words usually mean the concept needs simplifying. Name interfaces by capability, booleans as assertions, and Go initialisms conventionally.
+- Use semantic verbs: `New` creates ready values; `Open` accesses existing resources; `Parse` and `Decode` convert; `Get` looks up; `Sync` makes durable; `Flush` exposes buffered work; `Clone` creates independent ownership; `Copy` transfers. Use `Add`, `Append`, `Insert`, and `Put` according to their collection semantics.
+- Treat `Manager`, `Processor`, `Handler`, `Service`, `Data`, `Process`, `Execute`, and `Do` as vague until the domain gives them exact meaning.
+- Put `context.Context` first on blocking or cancellable calls and retain it only for that call.
+- Validate before side effects. Return operational failures as errors; reserve panics for violated programmer invariants. Wrap errors with the caller's action. Export error identities only for stable branching.
+- State ownership, concurrency safety, ordering, bounds, aliasing, partial progress, retry safety, and `Close` semantics. Mark borrowed data read-only with a lifetime; provide `Clone` for independent retention or mutation.
+- Use slices for bounded eager results, iterators for large or fallible streams, and channels when concurrent delivery is part of the contract.
+- Treat names, signatures, defaults, errors, ordering, blocking, ownership, and `Close` behavior as compatibility commitments. Prefer additive changes. Extending an exported interface breaks implementers; prefer a sibling interface or concrete method.
 
-Make `package.Identifier` read naturally without repetition. Use caller-domain nouns and precise verbs. Keep one word for each concept, and give synonyms distinct meanings.
-
-Distinguish `New` (create ready), `Open` (access existing), `Parse`/`Decode` (convert), `Get` (lookup), `Sync` (durability), `Flush` (visible buffering), `Clone` (independent ownership), and `Copy` (transfer). Use `Add`, `Append`, `Insert`, and `Put` only for their collection, order, position, and key semantics.
-
-Treat `Manager`, `Processor`, `Handler`, `Service`, `Data`, `Process`, `Execute`, and `Do` as warning signs. Keep one only when the domain gives it an exact meaning. Name interfaces by capability, write booleans as assertions, and preserve Go initialisms.
-
-## Make behavior explicit
-
-- Put `context.Context` first on blocking or cancellable operations. Use it for that call's lifetime.
-- Validate before side effects. Report operational failures as errors, and reserve panics for broken programmer invariants. Wrap causes with the caller's action. Export error identities only for stable branching.
-- Document ownership and concurrency safety. For `Close`, state what it commits, whether callers may repeat or retry it, and what remains valid afterward.
-- Document ordering, boundary inclusivity, filter combination, partial progress, and retry safety.
-- Mark borrowed data read-only and state its lifetime. Provide `Clone` when callers need independent retention or mutation.
-- Use slices for bounded eager results and iterators for large, lazy, fallible results. Use channels when concurrent delivery is part of the contract, not merely for iteration.
-
-## Protect evolution
-
-Treat names, signatures, defaults, errors, ordering, blocking, ownership, and `Close` behavior as promises. Evolve with additive methods, helpers, options, or sibling narrow interfaces. Keep existing exported interfaces unchanged.
-
-Verify each changed promise with a compiling example, an interface assertion, or a focused test. Cover the relevant boundaries, errors, cancellation, repeated close, concurrency, and aliasing cases. Run the narrow package tests, then `go test ./...`. Verification is complete when the common call site compiles and every changed promise has evidence.
-
-Present the call site first. Then report the proposed or reviewed surface, explicit guarantees, compatibility risks, and exports to remove or keep private. Separate required contract changes from optional polish.
+Verify each changed commitment with a compiling call site, interface assertion, or focused test. Run narrow package tests, then `go test ./...`. For review-only work, report caller impact and compatibility risk.
