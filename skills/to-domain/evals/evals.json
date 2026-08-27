@@ -1,0 +1,501 @@
+{
+  "skill_name": "to-domain",
+  "evals": [
+    {
+      "id": 1,
+      "name": "bootstrap-clear-single-context",
+      "description": "Clear evidence for one bounded context should become a small root-level YAML list without invented structure.",
+      "prompt": "Use to-domain to create specs/DOMAIN.yaml for this repository. The product documentation says: A Cart holds Products selected by a Shopper. Checkout turns a non-empty Cart into an Order. An Order is the confirmed purchase request and cannot return to a Cart. The code and tests use these exact terms. There is no existing specs/DOMAIN.yaml.",
+      "trap": "The model may add top-level domain or contexts wrappers, invent metadata and statuses, or split one coherent model into technical contexts.",
+      "assertions": [
+        {
+          "id": "1.1",
+          "text": "Produces specs/DOMAIN.yaml whose contents are a root YAML list with a context field"
+        },
+        {
+          "id": "1.2",
+          "text": "Records Cart, Product, Shopper, and Order with meanings supported by the prompt"
+        },
+        {
+          "id": "1.3",
+          "text": "Records checkout and the irreversible Order rule under rules"
+        },
+        {
+          "id": "1.4",
+          "text": "Does not add top-level domain, contexts, schema version, status, evidence, aliases, or translation fields"
+        },
+        {
+          "id": "1.5",
+          "text": "Does not add questions when the supplied evidence resolves the relevant meanings"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "same-word-different-contexts",
+      "description": "The same word with different meanings must remain separate across bounded contexts.",
+      "prompt": "Create specs/DOMAIN.yaml from these agreed definitions. In Billing, an Account is the legal entity that receives invoices and owes money. In Access Control, an Account is a person's login identity and may be suspended without affecting billing. Billing closes an Account only after its balance reaches zero. Access Control locks an Account after five failed sign-in attempts.",
+      "trap": "The model may merge Account into one global definition or rename one meaning just to avoid the collision.",
+      "assertions": [
+        {
+          "id": "2.1",
+          "text": "Creates separate Billing and Access Control context entries"
+        },
+        {
+          "id": "2.2",
+          "text": "Defines Account independently inside each context"
+        },
+        {
+          "id": "2.3",
+          "text": "Keeps the balance-zero rule in Billing and the failed-sign-in rule in Access Control"
+        },
+        {
+          "id": "2.4",
+          "text": "Does not force a global Account definition or invent a cross-context translation layer"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "documentation-over-stale-code",
+      "description": "Explicit domain documentation should outrank stale implementation names without hiding the discrepancy.",
+      "prompt": "Use to-domain on a shipping repository. The approved operations handbook defines Shipment as goods accepted for transport and Dispatch as the act that sends a Shipment from a depot. Old code still calls both concepts Delivery and has types named DeliveryService and DeliveryRecord. No domain expert has approved Delivery as the current term.",
+      "trap": "The model may treat code frequency as authority, define Delivery as canonical, or silently omit the disagreement.",
+      "assertions": [
+        {
+          "id": "3.1",
+          "text": "Uses Shipment and Dispatch as the domain terms"
+        },
+        {
+          "id": "3.2",
+          "text": "Does not define Delivery as the canonical business term"
+        },
+        {
+          "id": "3.3",
+          "text": "Captures the stale Delivery naming as a question or unresolved inconsistency using the allowed simple shape"
+        },
+        {
+          "id": "3.4",
+          "text": "Does not rename code or modify files other than specs/DOMAIN.yaml"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "sparse-evidence-no-invention",
+      "description": "Thin evidence should yield a small model with explicit questions rather than plausible fiction.",
+      "prompt": "Create specs/DOMAIN.yaml for a repository with one README sentence: Vendors submit Listings for review. The code contains SubmitListing, ReviewQueue, VendorStore, ApprovalPolicy, and PublishJob, but there are no docs or tests explaining review outcomes, publication, rejection, or who owns a Listing.",
+      "trap": "The model may invent a marketplace lifecycle, define every code noun, or fabricate approval rules.",
+      "assertions": [
+        {
+          "id": "4.1",
+          "text": "Records only meanings directly supported by the README or clearly labels uncertainty as questions"
+        },
+        {
+          "id": "4.2",
+          "text": "Does not invent review outcomes, publication behavior, rejection rules, or ownership semantics"
+        },
+        {
+          "id": "4.3",
+          "text": "Uses questions for unresolved lifecycle and ownership decisions"
+        },
+        {
+          "id": "4.4",
+          "text": "Does not turn every implementation identifier into a domain term"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "preserve-reviewed-existing-file",
+      "description": "Updating an existing file should preserve reviewed language and make a focused addition.",
+      "prompt": "Update the existing specs/DOMAIN.yaml below after the user confirms that a Refund is money returned for a settled Payment and that a Refund cannot exceed the settled amount. Preserve all reviewed material.\n\n```yaml\n- context: Payments\n  terms:\n    Payment: Money transferred to settle an Invoice.\n    Invoice: A request for a specific amount owed.\n  rules:\n    - A Payment may settle only one Invoice.\n```",
+      "trap": "The model may rewrite existing definitions, reorder everything, replace the context, or add speculative refund states.",
+      "assertions": [
+        {
+          "id": "5.1",
+          "text": "Preserves the existing Payment and Invoice definitions and existing rule"
+        },
+        {
+          "id": "5.2",
+          "text": "Adds Refund to the Payments context with the confirmed meaning"
+        },
+        {
+          "id": "5.3",
+          "text": "Adds the confirmed maximum-refund rule"
+        },
+        {
+          "id": "5.4",
+          "text": "Does not invent refund statuses, timing, fees, or approval behavior"
+        },
+        {
+          "id": "5.5",
+          "text": "Makes a focused update rather than reformatting or replacing the whole file"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "filter-technical-vocabulary",
+      "description": "Implementation vocabulary should not pollute the domain language.",
+      "prompt": "Create specs/DOMAIN.yaml for a booking system. Business docs say a Guest requests a Reservation for a Room, and an unpaid Reservation expires after 15 minutes. The implementation uses Redis, ReservationHandler, SQLReservationRow, JSONEncoder, goroutines, a timeout worker, and HTTP middleware.",
+      "trap": "The model may list framework, storage, concurrency, transport, and class-suffix terms as domain concepts.",
+      "assertions": [
+        {
+          "id": "6.1",
+          "text": "Includes Guest, Reservation, and Room as domain terms"
+        },
+        {
+          "id": "6.2",
+          "text": "Includes the unpaid expiration rule"
+        },
+        {
+          "id": "6.3",
+          "text": "Excludes Redis, SQL row, JSON encoder, goroutine, middleware, handler, and worker as domain terms"
+        },
+        {
+          "id": "6.4",
+          "text": "Does not create technical bounded contexts such as API, Database, or Infrastructure"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "rules-not-glossary-only",
+      "description": "A useful domain file must capture behavioral rules as well as noun definitions.",
+      "prompt": "Model this claims domain. A Policyholder files a Claim against an active Policy. An Adjuster may approve or deny a Claim. Approval creates a Payout, but the Payout cannot exceed the Policy limit. A denied Claim cannot create a Payout. All terms and rules are confirmed.",
+      "trap": "The model may produce only term definitions and lose the relationships and invariants that make the model useful.",
+      "assertions": [
+        {
+          "id": "7.1",
+          "text": "Defines Policyholder, Claim, Policy, Adjuster, and Payout"
+        },
+        {
+          "id": "7.2",
+          "text": "Records the active-Policy precondition for filing a Claim"
+        },
+        {
+          "id": "7.3",
+          "text": "Records approval and denial behavior"
+        },
+        {
+          "id": "7.4",
+          "text": "Records both Payout invariants without adding unconfirmed workflow states"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "grilling-before-confirmation",
+      "description": "Domain grilling should use the existing model but must not write tentative answers.",
+      "prompt": "We are halfway through grilling the Returns domain. specs/DOMAIN.yaml says a Return is a customer's request to send an Item back. We have not agreed whether approval creates a Refund or merely authorizes shipment. Continue the grilling. Do not treat anything discussed so far as confirmed.",
+      "trap": "The model may update specs/DOMAIN.yaml during the interview, assume an answer, or ask several unrelated questions at once.",
+      "assertions": [
+        {
+          "id": "8.1",
+          "text": "Uses the existing Return definition as context"
+        },
+        {
+          "id": "8.2",
+          "text": "Does not modify specs/DOMAIN.yaml before confirmation"
+        },
+        {
+          "id": "8.3",
+          "text": "Does not assume that approval creates a Refund or authorizes shipment"
+        },
+        {
+          "id": "8.4",
+          "text": "Asks one decision question and gives a recommended answer"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "grilling-after-confirmation",
+      "description": "Confirmed grilling outcomes should update the relevant context without absorbing unresolved ideas.",
+      "prompt": "We have finished grilling Returns and I confirm this shared understanding: Approval authorizes return shipment but does not create a Refund. A Refund is created only after the returned Item is received. We still do not know whether damaged Items follow the same rule. Update specs/DOMAIN.yaml.",
+      "trap": "The model may omit the agreed rules, invent damaged-item behavior, or rewrite unrelated contexts.",
+      "assertions": [
+        {
+          "id": "9.1",
+          "text": "Updates the Returns context with the confirmed Approval and Refund meanings or rules"
+        },
+        {
+          "id": "9.2",
+          "text": "States that approval alone does not create a Refund"
+        },
+        {
+          "id": "9.3",
+          "text": "Adds the damaged-Item uncertainty under questions"
+        },
+        {
+          "id": "9.4",
+          "text": "Does not invent damaged-item behavior or modify unrelated contexts"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "domain-file-only-scope",
+      "description": "Creating the domain artifact should not silently expand into code or documentation cleanup.",
+      "prompt": "Use to-domain to document the warehouse language. The repository uses the old code name Bin for the business term Location, and this mismatch should be visible. Create specs/DOMAIN.yaml only.",
+      "trap": "The model may rename Bin identifiers, update documentation, add migration plans, or edit unrelated files.",
+      "assertions": [
+        {
+          "id": "10.1",
+          "text": "Creates or updates only specs/DOMAIN.yaml"
+        },
+        {
+          "id": "10.2",
+          "text": "Uses Location as the business term when supported by the supplied domain language"
+        },
+        {
+          "id": "10.3",
+          "text": "Makes the Bin mismatch visible as a question or unresolved inconsistency"
+        },
+        {
+          "id": "10.4",
+          "text": "Does not rename code or create cleanup artifacts"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "technical-layer-is-not-context",
+      "description": "Technical modules should not be mistaken for bounded contexts when they express one business model.",
+      "prompt": "Create specs/DOMAIN.yaml for a small lending application. It has ui, api, service, and db packages, but all packages use one agreed lending language: Borrower, Application, Offer, and Loan. An accepted Offer creates a Loan. There is one team and no evidence of different models.",
+      "trap": "The model may create UI, API, Service, and Database contexts from the directory layout.",
+      "assertions": [
+        {
+          "id": "11.1",
+          "text": "Creates one business bounded context rather than contexts named after technical layers"
+        },
+        {
+          "id": "11.2",
+          "text": "Defines Borrower, Application, Offer, and Loan"
+        },
+        {
+          "id": "11.3",
+          "text": "Records that accepting an Offer creates a Loan"
+        },
+        {
+          "id": "11.4",
+          "text": "Does not infer multiple contexts solely from package boundaries"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "conflicting-synonyms",
+      "description": "Competing names without a clear authority should remain an explicit decision rather than become duplicate terms.",
+      "prompt": "Use to-domain on a support product. Product docs consistently say Ticket. Half the code says Case, and a recent meeting note uses both without defining a difference. Nobody has decided whether Case is an old synonym or a separate concept.",
+      "trap": "The model may define Ticket and Case as separate concepts, collapse them without evidence, or invent an alias field outside the agreed format.",
+      "assertions": [
+        {
+          "id": "12.1",
+          "text": "Keeps Ticket as the documented term"
+        },
+        {
+          "id": "12.2",
+          "text": "Does not invent a distinct meaning for Case"
+        },
+        {
+          "id": "12.3",
+          "text": "Adds a question asking whether Case is an old synonym or a separate concept"
+        },
+        {
+          "id": "12.4",
+          "text": "Does not add alias, deprecated, status, or evidence fields"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "empty-project-stop",
+      "description": "With no domain evidence, the skill should stop rather than manufacture a placeholder model.",
+      "prompt": "Use to-domain in a new empty repository. There are no requirements, conversations, docs, tests, schemas, or code, and I have supplied no business domain information.",
+      "trap": "The model may create a generic Unknown context, invent sample commerce terms, or claim a domain from the repository name.",
+      "assertions": [
+        {
+          "id": "13.1",
+          "text": "Does not invent a bounded context, terms, or rules"
+        },
+        {
+          "id": "13.2",
+          "text": "Does not create a placeholder specs/DOMAIN.yaml with Unknown or Example content"
+        },
+        {
+          "id": "13.3",
+          "text": "Requests the minimum domain information needed to proceed"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "non-domain-boundary",
+      "description": "The skill must recognize requests outside business-domain modeling.",
+      "prompt": "Use to-domain to choose a neural-network architecture, list model hyperparameters, and design the SQL tables that store training runs. There are no business-domain terms or rules to document.",
+      "trap": "The broad word model may pull the skill into machine learning or schema design and create an irrelevant specs/DOMAIN.yaml.",
+      "assertions": [
+        {
+          "id": "14.1",
+          "text": "Recognizes that the request is machine-learning and schema design rather than business-domain modeling"
+        },
+        {
+          "id": "14.2",
+          "text": "Does not create or modify specs/DOMAIN.yaml"
+        },
+        {
+          "id": "14.3",
+          "text": "Does not force hyperparameters, SQL tables, or storage details into domain terms and rules"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "yaml-scalar-safety",
+      "description": "YAML-sensitive domain language must remain strings after parsing.",
+      "prompt": "Create specs/DOMAIN.yaml for one confirmed context. Its terms are On, No, and Null. Their meanings are respectively: State: active, The literal answer # not a comment, and Effective on 2026-01-01. Preserve every term and meaning exactly as a string.",
+      "trap": "The model may emit plain YAML scalars that parsers coerce to booleans, null, mappings, comments, or dates.",
+      "assertions": [
+        {
+          "id": "15.1",
+          "text": "Produces YAML that parses successfully"
+        },
+        {
+          "id": "15.2",
+          "text": "Preserves On, No, and Null as three string term names"
+        },
+        {
+          "id": "15.3",
+          "text": "Preserves the colon, hash mark, and date-like text inside string meanings"
+        },
+        {
+          "id": "15.4",
+          "text": "Keeps the root-list and simple context shape"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "repository-specs-path",
+      "description": "The artifact belongs in the repository's specs directory even when work starts deeper in the tree.",
+      "prompt": "The current directory is repo/internal/order, while the repository root is repo. An obsolete internal/order/DOMAIN.yaml exists. Use to-domain to record a confirmed Order definition for the project.",
+      "trap": "The model may write beside the current package, update the obsolete nested file, or place DOMAIN.yaml at the repository root.",
+      "assertions": [
+        {
+          "id": "16.1",
+          "text": "Writes repo/specs/DOMAIN.yaml"
+        },
+        {
+          "id": "16.2",
+          "text": "Does not create repo/DOMAIN.yaml"
+        },
+        {
+          "id": "16.3",
+          "text": "Does not update internal/order/DOMAIN.yaml"
+        },
+        {
+          "id": "16.4",
+          "text": "Modifies no file outside repo/specs/DOMAIN.yaml"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "resolve-existing-question",
+      "description": "A confirmed answer should replace a stale question with the smallest supported rule.",
+      "prompt": "Existing specs/DOMAIN.yaml asks: Does Payment authorization happen before Order submission? The user now confirms that authorization must succeed before submission. Update the domain file.",
+      "trap": "The model may leave the stale question, duplicate it, or invent payment failure and retry behavior.",
+      "assertions": [
+        {
+          "id": "17.1",
+          "text": "Removes the resolved question"
+        },
+        {
+          "id": "17.2",
+          "text": "Adds the confirmed authorization-before-submission rule to the relevant context"
+        },
+        {
+          "id": "17.3",
+          "text": "Uses existing Payment and Order terms"
+        },
+        {
+          "id": "17.4",
+          "text": "Does not invent failure, retry, timeout, or settlement behavior"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "explanation-only-boundary",
+      "description": "A conceptual DDD question should not create an artifact without an intent to capture this project's domain.",
+      "prompt": "Explain what a bounded context is and give a small generic example. Do not model this repository or create files.",
+      "trap": "The skill may activate on DDD vocabulary alone and create specs/DOMAIN.yaml despite the explicit explanation-only request.",
+      "assertions": [
+        {
+          "id": "18.1",
+          "text": "Answers conceptually without creating or modifying specs/DOMAIN.yaml"
+        },
+        {
+          "id": "18.2",
+          "text": "Does not inspect or model the repository"
+        },
+        {
+          "id": "18.3",
+          "text": "Does not force the generic example into the project's domain artifact"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "scoped-monorepo-update",
+      "description": "A scoped request should not churn unrelated bounded contexts in a large repository.",
+      "prompt": "A monorepo's specs/DOMAIN.yaml contains Billing, Shipping, Catalog, and Support contexts. Update only Billing with the confirmed rule that an Invoice becomes overdue the day after its due date. No other domain information changed.",
+      "trap": "The model may normalize, reorder, rewrite, or re-evaluate every context during a whole-file pass.",
+      "assertions": [
+        {
+          "id": "19.1",
+          "text": "Adds the confirmed overdue rule to Billing"
+        },
+        {
+          "id": "19.2",
+          "text": "Preserves all unrelated contexts byte-for-byte where practical"
+        },
+        {
+          "id": "19.3",
+          "text": "Does not add terms or questions outside Billing"
+        },
+        {
+          "id": "19.4",
+          "text": "Makes a focused edit rather than rewriting the whole file"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "undefined-term-in-rule",
+      "description": "Rules must not rely on unexplained domain terms when the source does not define them.",
+      "prompt": "Create specs/DOMAIN.yaml for a warehouse. The confirmed language says a Location is a named place in a warehouse where Stock is kept, and Stock may be assigned to only one Location at a time. Nothing defines what Stock means in this domain.",
+      "trap": "The model may use Stock throughout the definition and rule without defining it or making the missing meaning visible.",
+      "assertions": [
+        {
+          "id": "20.1",
+          "text": "Defines Location and records the confirmed one-Location rule"
+        },
+        {
+          "id": "20.2",
+          "text": "Does not invent a meaning for Stock"
+        },
+        {
+          "id": "20.3",
+          "text": "Adds a question asking what Stock means in the Warehouse context"
+        },
+        {
+          "id": "20.4",
+          "text": "Produces valid YAML in the simple root-list shape"
+        }
+      ]
+    }
+  ]
+}

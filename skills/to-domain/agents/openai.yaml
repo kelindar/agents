@@ -1,0 +1,3 @@
+interface:
+  display_name: "To Domain"
+  short_description: "Capture domain language in specs/DOMAIN.yaml"

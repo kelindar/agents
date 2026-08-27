@@ -9,6 +9,8 @@ Caller-visible behavior is the API. Minimize concepts, not declarations.
 
 ## Establish the contract
 
+Read `specs/DOMAIN.yaml` if it exists and identify the relevant bounded context. Use its terms and rules in package names, exported identifiers, behavior, examples, and documentation. Surface conflicts instead of inventing vocabulary.
+
 Inspect exports, real callers, examples, tests, and docs. Draft the smallest realistic common call, including failure and cleanup when relevant. Keep an export only when it enables a useful caller action.
 
 Settle each relevant promise: ownership, mutation and aliasing, concurrency, blocking and cancellation, ordering and bounds, partial progress and retry, durability, and lifecycle. The contract is ready when callers need not infer behavior.

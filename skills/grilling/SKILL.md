@@ -9,6 +9,8 @@ Ask the questions one at a time, waiting for feedback on each question before co
 
 If a *fact* can be found by exploring the environment (filesystem, tools, etc.), look it up rather than asking me. The *decisions*, though, are mine - put each one to me and wait for my answer.
 
+When grilling a business domain, read `specs/DOMAIN.yaml` if it exists and apply the `to-domain` skill. Use its terms and questions during the interview. After I confirm our shared understanding, update `specs/DOMAIN.yaml` with the agreed terms and rules.
+
 Do not act on it until I confirm we have reached a shared understanding.
 
 In plan mode, use request_user_input tool and once shared understanding is reached, write it as a plan with invariants and decisions for me to review.

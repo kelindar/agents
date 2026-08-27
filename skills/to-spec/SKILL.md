@@ -14,7 +14,7 @@ The skill is fully standalone. Do not use an issue tracker, labels, setup skills
 
 1. Identify the project root. Use the repository root when inside a repository; otherwise use the current working directory.
 
-2. Explore the project enough to understand its current state. Use the project's domain vocabulary and respect relevant ADRs.
+2. Explore the project enough to understand its current state. Read `specs/DOMAIN.yaml` if it exists and use the relevant contexts, terms, and rules throughout the spec. Respect relevant ADRs. Record any conflict or missing domain decision under Further Notes rather than changing `specs/DOMAIN.yaml`.
 
 3. Determine the next spec ID from files directly inside `<project-root>/specs/todo` and `<project-root>/specs/live` named `SPEC-<ID>.md`. Use one greater than the highest existing ID, or `000` when none exist. Format the ID with at least three digits (`000`, `001`, ..., `999`, `1000`). Ignore files outside these folders and files that do not match this naming scheme.
 
