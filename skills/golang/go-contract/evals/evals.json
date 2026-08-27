@@ -122,7 +122,7 @@
       "assertions": [
         {
           "id": "5.1",
-          "text": "Uses short package-qualified names such as `client.Client`, `client.Config`, and `client.New`"
+          "text": "Uses package context to shorten the main type and constructor, preferably to `client.Client` and `client.New`"
         },
         {
           "id": "5.2",
@@ -159,7 +159,7 @@
         },
         {
           "id": "6.3",
-          "text": "Suggests a concise precise private name if enough context exists, or requests that context"
+          "text": "Keeps the replacement name contingent on package and body context rather than guessing from the old name"
         },
         {
           "id": "6.4",
