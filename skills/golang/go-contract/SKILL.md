@@ -1,11 +1,11 @@
 ---
 name: go-contract
-description: Design and review Go package contracts. Use before any change to caller-visible API or behavior.
+description: Design and review Go contracts and names. Use before API or behavior changes and Go naming decisions.
 ---
 
 # Go contract
 
-Caller-visible behavior is the API. Minimize concepts, not declarations.
+Caller-visible behavior is the API. Apply naming discipline to every declaration. Minimize concepts, not declarations.
 
 ## Establish the contract
 
@@ -20,7 +20,7 @@ Settle each relevant promise: ownership, mutation and aliasing, concurrency, blo
 - Give the package one job and vocabulary. Split concepts when callers use them independently.
 - Prefer one constructor with a ready result. Use `New` when the package constructs one main type; add a type word only to distinguish peers. Put required identity in parameters; reserve options for optional policy or tuning. State an explicit zero-option default for each option. Name option functions for the policy, such as `Retries(3)`; a `With` prefix adds no meaning. Export configuration when callers use it as data.
 - Return package-owned concrete types. Accept narrow interfaces at real substitution seams. Add extension points for current alternate implementations, not hypothetical ones. Honor standard contracts in full.
-- Make `package.Identifier` natural and omit words supplied by the package name. Prefer one-word functions, methods, and types. For two words, put the action or qualifier first (`ReadFile`, `MaxSize`, `FileStore`). Use a third word only when two cannot preserve a caller-visible distinction. Name interfaces by capability, booleans as assertions, and Go initialisms conventionally.
+- Name from the call site. First choose the narrowest package that owns the concept, comparing plausible package homes; then read each exported candidate as `package.Identifier` and omit words the package supplies. Apply the same ownership and context test to unexported names, retaining only distinctions local callers need. Prefer `tool.Direct` and `tool.Delegated` over `connector.DirectToolCaller` and `connector.DelegatedToolCaller` when the distinction belongs only to tool calls. Prefer one-word functions, methods, and types. For two words, put the action or qualifier first (`ReadFile`, `MaxSize`, `FileStore`). Use a third word only when two cannot preserve a caller-visible distinction. Name interfaces by capability, or by the distinguishing qualifier for sibling modes in a narrow package; name booleans as assertions and Go initialisms conventionally.
 - Use semantic verbs: `New` creates ready values; `Open` accesses existing resources; `Parse` and `Decode` convert; `Get` looks up; `Sync` makes durable; `Flush` exposes buffered work; `Clone` creates independent ownership; `Copy` transfers. Use `Add`, `Append`, `Insert`, and `Put` according to their collection semantics.
 - Treat `Manager`, `Processor`, `Handler`, `Service`, `Data`, `Process`, `Execute`, and `Do` as vague until the domain gives them exact meaning.
 - Put `context.Context` first on blocking or cancellable calls and retain it only for that call.

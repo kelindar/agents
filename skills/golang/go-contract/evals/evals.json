@@ -159,11 +159,36 @@
         },
         {
           "id": "6.3",
-          "text": "Keeps the replacement name contingent on package and body context rather than guessing from the old name"
+          "text": "Applies package ownership and local call-site context when choosing the unexported replacement name"
         },
         {
           "id": "6.4",
           "text": "Does not invent exported types, interfaces, constructors, or compatibility work"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "package-before-identifier",
+      "description": "Choose the narrowest owning package before shortening an exported identifier.",
+      "prompt": "Review these unshipped Go interface names. Both are currently in package `connector`, while their methods are used only by package `connector/tool`.\n\n```go\npackage connector\n\ntype DirectToolCaller interface {\n    Connector\n    CallCatalogTool(context.Context, *schema.Tool, []byte) ([]byte, error)\n}\n\ntype DelegatedToolCaller interface {\n    Connector\n    CallCatalogToolFor(context.Context, storage.Storage, *schema.Tool, []byte, storage.URN) ([]byte, error)\n}\n```\n\nCallers may be updated. Propose the clearest package and exported names.",
+      "trap": "The model may shorten identifiers inside `connector` without considering whether the tool-specific contracts belong in `connector/tool`.",
+      "assertions": [
+        {
+          "id": "7.1",
+          "text": "Considers package ownership before choosing the identifiers"
+        },
+        {
+          "id": "7.2",
+          "text": "Moves the interfaces to package `connector/tool` because only tool invocation uses them"
+        },
+        {
+          "id": "7.3",
+          "text": "Proposes the call-site names `tool.Direct` and `tool.Delegated`"
+        },
+        {
+          "id": "7.4",
+          "text": "Compares or judges the complete package-qualified names rather than identifiers in isolation"
         }
       ]
     }
