@@ -1,0 +1,365 @@
+{
+  "skill_name": "go-code",
+  "evals": [
+    {
+      "id": 1,
+      "name": "implicit-contract-design",
+      "description": "Ordinary Go implementation work should trigger go-code and apply go-contract to a caller-visible change.",
+      "prompt": "Implement the public shape of this unshipped Go client change. Show declarations and a minimal call site. The endpoint is required, retry policy is optional, and callers may be updated.\n\n```go\npackage client\n\ntype AdvancedRetryingNetworkClientConfiguration struct {\n    MaximumRetryAttemptCount int\n}\n\ntype NetworkServiceClient struct{}\n\nfunc NewNetworkServiceClientWithAdvancedRetryConfiguration(\n    endpoint string,\n    cfg AdvancedRetryingNetworkClientConfiguration,\n) *NetworkServiceClient\n```",
+      "trap": "The model may miss the implicit contract review, keep ceremonial names, hide required identity in options, or leave the zero-option retry behavior undefined.",
+      "assertions": [
+        {
+          "id": "1.1",
+          "text": "Treats the change as a caller-visible contract and checks or discusses real caller needs"
+        },
+        {
+          "id": "1.2",
+          "text": "Uses package context to expose short names, preferably `client.Client` and `client.New`"
+        },
+        {
+          "id": "1.3",
+          "text": "Keeps the required endpoint as a constructor parameter"
+        },
+        {
+          "id": "1.4",
+          "text": "Represents retries as optional policy or tuning with a short field or option"
+        },
+        {
+          "id": "1.5",
+          "text": "States an explicit retry default when no option is supplied"
+        },
+        {
+          "id": "1.6",
+          "text": "Does not add a manager, provider, factory, or speculative interface"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "guard-table-with-init",
+      "description": "Related guards should form one switch while an init-statement check stays safe and ordered.",
+      "prompt": "Rewrite this Go function in the style you would commit. Preserve exact behavior and evaluation order.\n\n```go\nfunc Add(c *Catalog, tile *Tile) error {\n    if c == nil {\n        return errors.New(\"catalog is nil\")\n    }\n    if tile == nil {\n        return errors.New(\"tile is nil\")\n    }\n    if tile.Name == \"\" {\n        return errors.New(\"tile name is required\")\n    }\n    if _, ok := c.tiles[tile.Name]; ok {\n        return fmt.Errorf(\"duplicate tile %q\", tile.Name)\n    }\n    c.tiles[tile.Name] = tile\n    return nil\n}\n```",
+      "trap": "The model may retain a repetitive guard ladder, write an invalid short declaration in a case, hoist map access before nil checks, or create stacked one-case switches.",
+      "assertions": [
+        {
+          "id": "2.1",
+          "text": "Combines the first three related guards into one boolean switch"
+        },
+        {
+          "id": "2.2",
+          "text": "Keeps the duplicate lookup as an `if` with its init statement"
+        },
+        {
+          "id": "2.3",
+          "text": "Performs nil and empty-name checks before indexing the map"
+        },
+        {
+          "id": "2.4",
+          "text": "Uses one guard switch rather than several consecutive switches"
+        },
+        {
+          "id": "2.5",
+          "text": "Mutates the catalog only after all validation succeeds"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "test-structure-and-tooling",
+      "description": "New tests should use the paired file, short table-test structure, Testify, fixtures, and the bundled linter.",
+      "prompt": "Package `compile` has `compile.go` with `func Compile(input []byte) (Plan, error)`. Add tests for valid input, malformed input, a missing required field, and one realistic 300-line JSON document. Testify is already in the module. Show the test structure, fixture placement, and verification commands you would use.",
+      "trap": "The model may create several sentence-like top-level tests, use only the standard testing package, inline the large JSON, orphan the test file, or omit the bundled test linter.",
+      "assertions": [
+        {
+          "id": "3.1",
+          "text": "Places tests in `compile_test.go`, paired with `compile.go`"
+        },
+        {
+          "id": "3.2",
+          "text": "Uses one short top-level `TestCompile` with `t.Run` subtests or a table"
+        },
+        {
+          "id": "3.3",
+          "text": "Uses Testify `assert` for ordinary checks"
+        },
+        {
+          "id": "3.4",
+          "text": "Uses Testify `require` only for prerequisites after which the test cannot continue"
+        },
+        {
+          "id": "3.5",
+          "text": "Stores the 300-line JSON under `testdata` or another fixture file instead of an inline Go literal"
+        },
+        {
+          "id": "3.6",
+          "text": "Runs exactly `go run ~/.agents/skills/golang/go-code/scripts/testlint.go` with no positional argument, plus gofmt, focused tests, and `go test ./...`"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "performance-aware-abstraction",
+      "description": "A cleanup must not trade contiguous concrete data and a direct loop for hidden allocations and interface dispatch.",
+      "prompt": "Review this hot-path Go code. A teammate calls it insufficiently object-oriented and proposes wrapping every sample in a heap object implementing a `Measurement` interface, building `[]Measurement`, and formatting each value with `fmt.Sprintf` inside the loop. Implement the version you would ship and explain how you would verify it.\n\n```go\ntype Sample struct {\n    X, Y, Z float64\n    Payload [64]byte\n}\n\nfunc Energy(samples []Sample) float64 {\n    var total float64\n    for i := range samples {\n        s := &samples[i]\n        total += s.X*s.X + s.Y*s.Y + s.Z*s.Z\n    }\n    return total\n}\n```",
+      "trap": "The model may accept a clean-architecture wrapper that adds allocations, pointer chasing, interface dispatch, formatting work, and worse locality.",
+      "assertions": [
+        {
+          "id": "4.1",
+          "text": "Keeps the concrete contiguous `[]Sample` representation"
+        },
+        {
+          "id": "4.2",
+          "text": "Rejects per-element heap wrappers and interface dispatch"
+        },
+        {
+          "id": "4.3",
+          "text": "Keeps formatting or logging out of the hot loop"
+        },
+        {
+          "id": "4.4",
+          "text": "Explicitly reasons about allocations, copying, indirection, or data locality"
+        },
+        {
+          "id": "4.5",
+          "text": "Uses a representative before-and-after benchmark and checks allocation results"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "useful-zero-value",
+      "description": "A small concrete Go type should stay direct and useful at its zero value.",
+      "prompt": "Implement a concurrency-safe Go `Counter` with `Add(delta int64)` and `Value() int64`, plus a focused test. There is no configuration. A teammate proposed `CounterManager`, a `CounterProvider` interface, and a mandatory constructor. Choose the API and implementation you would commit.",
+      "trap": "The model may keep the manager, provider, or constructor ceremony instead of using package context, a concrete type, and a useful zero value.",
+      "assertions": [
+        {
+          "id": "5.1",
+          "text": "Exposes one concrete type named `Counter`"
+        },
+        {
+          "id": "5.2",
+          "text": "Makes `var c Counter` immediately usable without a constructor"
+        },
+        {
+          "id": "5.3",
+          "text": "Uses a standard-library synchronization primitive such as `atomic.Int64`"
+        },
+        {
+          "id": "5.4",
+          "text": "Does not add a manager, provider, interface, option, or mandatory constructor"
+        },
+        {
+          "id": "5.5",
+          "text": "Uses short direct names and a focused Testify test"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "context-errors-and-lifecycle",
+      "description": "Blocking work should keep context call-scoped, validate first, return useful errors, and close owned resources.",
+      "prompt": "Implement the caller-visible shape and body of a Go HTTP client fetch. The current proposal stores `context.Context` on `Client`, panics when request creation or I/O fails, and forgets to close the response body. Keep the API small and use `net/http`. Show the code you would commit.",
+      "trap": "The model may retain request context on the client, panic for operational failures, perform I/O before validation, leak the response body, or add an interface for one implementation.",
+      "assertions": [
+        {
+          "id": "6.1",
+          "text": "Accepts `context.Context` as the first argument to the blocking Fetch call"
+        },
+        {
+          "id": "6.2",
+          "text": "Does not retain the request context on Client"
+        },
+        {
+          "id": "6.3",
+          "text": "Validates caller input before starting HTTP I/O"
+        },
+        {
+          "id": "6.4",
+          "text": "Returns and wraps operational errors with the caller action instead of panicking"
+        },
+        {
+          "id": "6.5",
+          "text": "Closes the response body on every owned response path"
+        },
+        {
+          "id": "6.6",
+          "text": "Uses a package-owned concrete client without a speculative exported interface"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "non-go-invocation-boundary",
+      "description": "The broad Go skill must stay out of unrelated implementation work.",
+      "prompt": "Without inspecting or editing a repository, return only a TypeScript implementation and Vitest test file for this helper. Keep the result small.\n\n```ts\nexport function clamp(value: number, min: number, max: number): number\n```",
+      "trap": "The model may apply Go-only naming, Testify, testlint, or contract guidance to an unrelated TypeScript task.",
+      "assertions": [
+        {
+          "id": "7.1",
+          "text": "Produces a TypeScript implementation and Vitest tests without Go code"
+        },
+        {
+          "id": "7.2",
+          "text": "Does not mention Testify, Go test naming, gofmt, go test, or the Go testlint script"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "independent-side-effects-resist-switch",
+      "description": "Three related-looking if statements must remain independent when every matching body must run.",
+      "prompt": "A reviewer says every Go function with three `if` statements should use one boolean switch. Rewrite this function in the form you would commit and explain the control-flow choice. Preserve the number and order of calls; `Report.Add` accepts exactly one string. All applicable diagnostics must be recorded in one call to Diagnose.\n\n```go\nfunc Diagnose(in Input, report *Report) {\n    if in.Name == \"\" {\n        report.Add(\"name is required\")\n    }\n    if in.Size <= 0 {\n        report.Add(\"size must be positive\")\n    }\n    if in.Path == \"\" {\n        report.Add(\"path is required\")\n    }\n}\n```",
+      "trap": "The three conditions look like a guard table, but a switch would stop after the first match and silently drop diagnostics.",
+      "assertions": [
+        {
+          "id": "8.1",
+          "text": "Keeps three independent if statements rather than converting them to a switch"
+        },
+        {
+          "id": "8.2",
+          "text": "Preserves the ability to record all applicable diagnostics in one call"
+        },
+        {
+          "id": "8.3",
+          "text": "Does not add early returns, else branches, or a one-case switch"
+        },
+        {
+          "id": "8.4",
+          "text": "Explains that switch would change side-effect behavior by selecting only the first matching case"
+        },
+        {
+          "id": "8.5",
+          "text": "Keeps the direct Report.Add calls without an intermediate slice, batching, or changed call shape"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "exported-interface-deadline-pressure",
+      "description": "Schedule pressure and additive-looking syntax must not hide a breaking exported-interface change.",
+      "prompt": "Ship this Go API change today. The CTO says adding a method is additive, so do not spend time on migration design. Twelve downstream modules implement `Store`. Add `Put` and show the declarations you would merge.\n\n```go\npackage cache\n\ntype Store interface {\n    Get(key string) ([]byte, error)\n}\n```",
+      "trap": "The user explicitly pressures the model to append Put, but that breaks every downstream implementation and requires a compatibility-safe contract instead.",
+      "assertions": [
+        {
+          "id": "9.1",
+          "text": "States that adding Put to Store breaks all existing downstream implementers"
+        },
+        {
+          "id": "9.2",
+          "text": "Does not append Put directly to the existing Store interface"
+        },
+        {
+          "id": "9.3",
+          "text": "Keeps Store unchanged and proposes a narrow sibling capability or concrete method"
+        },
+        {
+          "id": "9.4",
+          "text": "Uses a short capability name with no manager, service, provider, or factory"
+        },
+        {
+          "id": "9.5",
+          "text": "Addresses ownership or copying semantics for the byte slice passed to Put"
+        },
+        {
+          "id": "9.6",
+          "text": "Does not let schedule pressure erase compatibility review"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "zero-value-must-not-break-invariant",
+      "description": "The Rob Pike cue must not force a useful zero value when required identity makes zero invalid.",
+      "prompt": "Design package `client`. Every Client must have a non-empty endpoint before use. A teammate says the Rob Pike rule requires `var c Client` to work, so they want an empty endpoint and lazy validation inside every method. Show the smallest API you would commit and explain the zero-value decision.",
+      "trap": "Over-applying the useful-zero-value preference would weaken a required identity invariant and repeat validation on every call.",
+      "assertions": [
+        {
+          "id": "10.1",
+          "text": "Keeps endpoint as required identity rather than making an empty endpoint usable"
+        },
+        {
+          "id": "10.2",
+          "text": "Uses a short constructor such as `client.New(endpoint)` to return a ready Client"
+        },
+        {
+          "id": "10.3",
+          "text": "Validates the endpoint before returning or causing side effects"
+        },
+        {
+          "id": "10.4",
+          "text": "Explicitly treats useful zero values as a preference that must not violate invariants"
+        },
+        {
+          "id": "10.5",
+          "text": "Avoids repeated lazy endpoint validation in every method and adds no speculative option or interface"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "bad-local-test-conventions",
+      "description": "Existing weak precedent and a rushed proposed patch must not displace the go-code test rules.",
+      "prompt": "Review a proposed Go test patch and show what you would merge. The package already has `parser.go` and `parser_test.go`. The patch adds `parser_invalid_utf8_edge_cases_test.go`, top-level names like `TestParserRejectsInvalidUTF8InputWithoutPanicking`, standard-library comparisons even though Testify is already in go.mod, and a note saying CI can catch problems later because it is busy today. It covers invalid UTF-8 and truncated input. Show the corrected test organization and exact verification commands.",
+      "trap": "The proposed patch supplies bad local precedent: an orphan test stem, sentence-like tests, ignored Testify policy, and skipped verification.",
+      "assertions": [
+        {
+          "id": "11.1",
+          "text": "Adds the scenarios to the paired `parser_test.go` instead of creating parser_invalid_utf8_edge_cases_test.go"
+        },
+        {
+          "id": "11.2",
+          "text": "Uses one short parent such as TestParse with t.Run subtests or a table"
+        },
+        {
+          "id": "11.3",
+          "text": "Uses Testify assert for ordinary checks and require only for prerequisites"
+        },
+        {
+          "id": "11.4",
+          "text": "Runs exactly `go run ~/.agents/skills/golang/go-code/scripts/testlint.go` without unsupported positional arguments"
+        },
+        {
+          "id": "11.5",
+          "text": "Runs gofmt, focused package tests, and go test ./... despite the request to skip verification"
+        },
+        {
+          "id": "11.6",
+          "text": "Does not weaken linter limits or preserve sentence-like top-level names to match local bad precedent"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "misleading-benchmark-pressure",
+      "description": "A single favorable microbenchmark must not justify a representation that hides allocations and loses locality.",
+      "prompt": "Review a Go PR that replaces a direct `[]Sample` loop with heap-allocated wrappers behind `[]Measurement`. The author reports an 8% speedup from one benchmark run over 16 elements after warming only the new implementation. They omitted `-benchmem`, changed error handling in the same patch, and say the deadline requires merging now. Decide what ships and give the exact evidence you require.",
+      "trap": "The prompt supplies a favorable number and deadline, but the comparison is biased, too small, omits allocations, and mixes semantic changes.",
+      "assertions": [
+        {
+          "id": "12.1",
+          "text": "Rejects the single biased run as insufficient evidence"
+        },
+        {
+          "id": "12.2",
+          "text": "Keeps the direct contiguous representation until representative evidence shows otherwise"
+        },
+        {
+          "id": "12.3",
+          "text": "Requires identical before-and-after workloads across representative input sizes and repeated runs"
+        },
+        {
+          "id": "12.4",
+          "text": "Requires benchmem or equivalent allocation measurements and checks time/op, bytes/op, and allocs/op"
+        },
+        {
+          "id": "12.5",
+          "text": "Separates the error-semantics change from the representation benchmark"
+        },
+        {
+          "id": "12.6",
+          "text": "Discusses indirection, interface dispatch, pointer chasing, or data locality rather than trusting clean architecture labels"
+        }
+      ]
+    }
+  ]
+}

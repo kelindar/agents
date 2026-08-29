@@ -1,0 +1,6 @@
+interface:
+  display_name: "Go Code"
+  short_description: "Apply personal Go rules while writing code"
+  default_prompt: "Use $go-code to implement this Go change with the repository's contract, control-flow, and test conventions."
+policy:
+  allow_implicit_invocation: true
