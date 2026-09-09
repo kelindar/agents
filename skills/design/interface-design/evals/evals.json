@@ -1,0 +1,291 @@
+{
+  "skill_name": "interface-design",
+  "evals": [
+    {
+      "id": 1,
+      "name": "existing-design-contract-wins",
+      "description": "A UI change should start from the project's durable design rules instead of inventing a new visual direction.",
+      "prompt": "Refine the billing settings screen in this repository. `specs/DESIGN.md` says the product uses a 4px spacing base, borders-only depth, 6px control radii, one cobalt accent, and the existing `Button`, `Field`, and `Alert` components. The current screen feels plain, so make it polished. A teammate suggests glass cards, 16px radii, gradients, and a new button component.",
+      "trap": "The request for polish and the teammate's concrete proposal may pull the model away from the existing contract.",
+      "assertions": [
+        {
+          "id": "1.1",
+          "text": "Reads and treats `specs/DESIGN.md` as the current project design contract"
+        },
+        {
+          "id": "1.2",
+          "text": "Keeps the 4px spacing base, borders-only depth, 6px control radii, and one cobalt accent"
+        },
+        {
+          "id": "1.3",
+          "text": "Reuses Button, Field, and Alert instead of creating replacements"
+        },
+        {
+          "id": "1.4",
+          "text": "Rejects glass cards, gradients, and 16px radii as inconsistent with the project"
+        },
+        {
+          "id": "1.5",
+          "text": "Improves hierarchy and spacing without replacing the established visual direction"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "domain-specific-greenfield-direction",
+      "description": "A new product screen should emerge from the user's task and domain rather than a generic SaaS template.",
+      "prompt": "Design a desktop dashboard for an archivist who spends hours reconciling damaged film reels. The main task is deciding which reel should be restored next. Build a clear initial direction, not a marketing page.",
+      "trap": "The dashboard framing invites a standard sidebar, equal metric cards, Inter, blue accents, and generic charts.",
+      "assertions": [
+        {
+          "id": "2.1",
+          "text": "Identifies the archivist, restoration-priority decision, and an appropriate working feel"
+        },
+        {
+          "id": "2.2",
+          "text": "Uses concrete concepts and colors from film archives or restoration work"
+        },
+        {
+          "id": "2.3",
+          "text": "Names at least one signature element tied specifically to damaged film restoration"
+        },
+        {
+          "id": "2.4",
+          "text": "Makes the next reel to restore the single focal point"
+        },
+        {
+          "id": "2.5",
+          "text": "Avoids a generic equal-card dashboard composition and default visual language"
+        },
+        {
+          "id": "2.6",
+          "text": "Connects layout, type, color, and density choices to the archivist's work"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "custom-control-pressure",
+      "description": "Visual customization must not replace accessible platform or project controls with improvised behavior.",
+      "prompt": "Make our assignee picker feel unique. The repository already uses an accessible Combobox primitive. The designer wants a fully custom clickable div because the primitive is annoying to style. It must support search, keyboard navigation, disabled people, and a popover list. Implement the approach you would ship.",
+      "trap": "The user explicitly asks for a custom div and frames accessibility as a styling inconvenience.",
+      "assertions": [
+        {
+          "id": "3.1",
+          "text": "Uses and styles the existing Combobox primitive"
+        },
+        {
+          "id": "3.2",
+          "text": "Does not use a clickable div as the control"
+        },
+        {
+          "id": "3.3",
+          "text": "Preserves search, arrow-key navigation, focus management, disabled state, and ARIA behavior"
+        },
+        {
+          "id": "3.4",
+          "text": "Creates visual distinctiveness through composition and styling rather than replacing behavior"
+        },
+        {
+          "id": "3.5",
+          "text": "Uses the project's tokens and styling convention"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "visual-verification-under-deadline",
+      "description": "A deadline must not turn non-trivial UI work into an unverified code-only change.",
+      "prompt": "Finish the responsive account page and report its verification status accurately. It has a sticky action bar, a two-column form, validation messages, and an empty state. The build passes. A teammate says the deadline is in 20 minutes and asks you to skip the browser because static checks are enough.",
+      "trap": "Deadline pressure and a teammate's request equate a passing build with a visually verified interface.",
+      "assertions": [
+        {
+          "id": "4.1",
+          "text": "Treats visual verification as required before claiming this non-trivial responsive change is verified"
+        },
+        {
+          "id": "4.2",
+          "text": "Attempts visual checks at desktop and mobile widths when a browser or render surface is available"
+        },
+        {
+          "id": "4.3",
+          "text": "Names sticky-bar overlap, two-column collapse, validation messages, and the empty state as visual checks"
+        },
+        {
+          "id": "4.4",
+          "text": "Does not substitute passing build or static checks for visual evidence"
+        },
+        {
+          "id": "4.5",
+          "text": "If browser access is unavailable, reports the result as visually unverified instead of fully done"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "complete-state-matrix",
+      "description": "A polished component must include interaction and data states, not only its ideal screenshot.",
+      "prompt": "Design a production-ready compact deployment row with service name, commit, health, duration, and a retry action. Duration may be unavailable before telemetry arrives. A teammate wants to keep the patch small by showing only the normal successful state and adding failures and keyboard details later.",
+      "trap": "A teammate's patch-size pressure encourages an attractive happy path with missing operational and accessibility states.",
+      "assertions": [
+        {
+          "id": "5.1",
+          "text": "Includes default, hover, active, focus, and disabled behavior for the retry action"
+        },
+        {
+          "id": "5.2",
+          "text": "Accounts for loading, failed, empty or unavailable, and successful deployment data"
+        },
+        {
+          "id": "5.3",
+          "text": "Keeps the row compact while preserving a 40px or larger action hit area"
+        },
+        {
+          "id": "5.4",
+          "text": "Uses tabular numerals for changing duration values"
+        },
+        {
+          "id": "5.5",
+          "text": "Does not defer required states or keyboard focus treatment"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "motion-restraint",
+      "description": "Motion should provide feedback without slowing frequent work or violating reduced-motion preferences.",
+      "prompt": "Make a command palette feel premium for power users who open it dozens of times an hour. A designer proposes animating every result's height and margin with `transition: all 500ms ease-in`, staggering each item by 150ms, and scaling the palette from zero every time it opens. Implement the version you would ship.",
+      "trap": "A detailed but slow and layout-heavy animation prescription is presented under the label premium.",
+      "assertions": [
+        {
+          "id": "6.1",
+          "text": "Rejects animation that delays a frequently used command palette"
+        },
+        {
+          "id": "6.2",
+          "text": "Does not use transition all, layout-property animation, ease-in entry, or scale from zero"
+        },
+        {
+          "id": "6.3",
+          "text": "Uses no motion or a fast transform and opacity treatment with exact properties"
+        },
+        {
+          "id": "6.4",
+          "text": "Keeps a centered dialog centered during its subtle animation; trigger-attached popovers would use their trigger as the origin"
+        },
+        {
+          "id": "6.5",
+          "text": "Respects prefers-reduced-motion"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "save-concise-design-contract",
+      "description": "Accepted durable decisions should be saved to the exact project path in the compact contract format.",
+      "prompt": "We agreed on these reusable rules: 4px spacing base; 32px field height; 6px controls and 10px cards; borders-only depth; amber only for warnings; primary actions use the existing Button component. Save them for future interface work. A teammate also asks you to include the full design discussion and every rejected mockup so future agents have context.",
+      "trap": "A valid save request is mixed with teammate pressure to store process history and rejected explorations.",
+      "assertions": [
+        {
+          "id": "7.1",
+          "text": "Creates or updates exactly `specs/DESIGN.md`"
+        },
+        {
+          "id": "7.2",
+          "text": "Uses a Design title and MUST, SHOULD, and NEVER sections"
+        },
+        {
+          "id": "7.3",
+          "text": "Records the exact spacing, sizing, radius, depth, color, and component decisions as concise rules"
+        },
+        {
+          "id": "7.4",
+          "text": "Omits the design discussion, rejected mockups, and other history"
+        },
+        {
+          "id": "7.5",
+          "text": "Does not create `.interface-design/system.md`, `system.md`, `design.md`, or any alternate design-contract path"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "do-not-bloat-design-contract",
+      "description": "One-off implementation details should not become permanent project rules.",
+      "prompt": "Add a temporary maintenance banner to one admin screen. It uses a one-off message supplied by operations and will be deleted tomorrow. `specs/DESIGN.md` already defines the Alert component, spacing, and radii. A teammate asks you to update the design file with the banner copy, deletion date, component props, and a transcript of why we chose it. Keep the project design contract useful.",
+      "trap": "Teammate pressure asks the agent to persist ephemeral content that does not belong in a durable design contract.",
+      "assertions": [
+        {
+          "id": "8.1",
+          "text": "Reads and applies the existing Alert, spacing, and radius rules from `specs/DESIGN.md`"
+        },
+        {
+          "id": "8.2",
+          "text": "Does not add the temporary copy, deletion date, prop values, or decision transcript to the design contract"
+        },
+        {
+          "id": "8.3",
+          "text": "Updates `specs/DESIGN.md` only if the work establishes a genuinely reusable rule"
+        },
+        {
+          "id": "8.4",
+          "text": "Does not duplicate an existing alert rule"
+        },
+        {
+          "id": "8.5",
+          "text": "Keeps the implementation scoped to the temporary banner"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "audit-without-unrequested-rewrite",
+      "description": "A design review should report concrete defects and evidence without silently expanding into a redesign.",
+      "prompt": "Audit the current project table for design quality. Do not change code. It has sortable headers, inline filters, row actions, loading skeletons, and an empty state. Tell me what fails the project's design contract and what you would change first.",
+      "trap": "A broad craft skill may overreach into implementation or propose an unrelated visual direction during a read-only audit.",
+      "assertions": [
+        {
+          "id": "9.1",
+          "text": "Reads `specs/DESIGN.md` and inspects the actual table implementation or rendering"
+        },
+        {
+          "id": "9.2",
+          "text": "Reports concrete findings tied to hierarchy, tokens, spacing, states, accessibility, or responsiveness"
+        },
+        {
+          "id": "9.3",
+          "text": "Prioritizes the most consequential issue first"
+        },
+        {
+          "id": "9.4",
+          "text": "Does not edit code, rewrite the screen, or replace the project's visual direction"
+        },
+        {
+          "id": "9.5",
+          "text": "Distinguishes observed defects from recommendations that still need visual confirmation"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "marketing-boundary",
+      "description": "The product-interface skill must not claim brand or campaign work outside its scope.",
+      "prompt": "Create a launch campaign landing page for a new fragrance. The work is brand storytelling, art direction, hero copy, editorial photography, and conversion messaging. There is no logged-in product interface.",
+      "trap": "The request is visual and mentions layout, but it is entirely marketing and brand work.",
+      "assertions": [
+        {
+          "id": "10.1",
+          "text": "Recognizes that the request is outside the interface-design skill's scope"
+        },
+        {
+          "id": "10.2",
+          "text": "Does not apply dashboard, admin, product-state, or `specs/DESIGN.md` guidance"
+        },
+        {
+          "id": "10.3",
+          "text": "Routes the work to an appropriate marketing or frontend design workflow when available"
+        }
+      ]
+    }
+  ]
+}
