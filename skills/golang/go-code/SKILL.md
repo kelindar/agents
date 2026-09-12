@@ -37,6 +37,7 @@ Make the smallest idiomatic change. Apply every relevant rule before declaring t
 
 ## NEVER
 
+- Use vague catch-all names such as `helper`, `helpers`, `util`, or `utils` for packages, files, types, or functions, including prefixes and suffixes. These are an anti-pattern under all circumstances. Name code for its concrete responsibility and keep it with the domain that owns it.
 - Have workers delegate their assignments again.
 - Add speculative dependencies, interfaces, options, configuration, or exports.
 - Extend an exported interface for convenience, panic for an operational failure, or retain a request context after its call.
